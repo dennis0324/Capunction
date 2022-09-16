@@ -1,5 +1,8 @@
 libUIOHook: Cross-platform keyboard and mouse hooking from userland. 
 ====================================================================
+this keyHook is only compile in exe (unsupport apple)
+
+
 
 ![build-binaires](https://github.com/kwhat/libuiohook/workflows/build-binaires/badge.svg)
 
@@ -7,15 +10,6 @@ libUIOHook: Cross-platform keyboard and mouse hooking from userland.
 Prerequisites: 
  * [cmake](https://cmake.org)
  * gcc, clang or msvc
- * x11 dependencies:
-   * libx11-dev
-   * libxtst-dev
-   * libxt-dev
-   * libxinerama-dev
-   * libx11-xcb-dev
-   * libxkbcommon-dev
-   * libxkbcommon-x11-dev
-   * libxkbfile-dev 
 
 ```
 $ git clone https://github.com/kwhat/libuiohook
