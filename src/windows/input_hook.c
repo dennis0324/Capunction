@@ -155,10 +155,6 @@ void unregister_running_hooks() {
         keyboard_event_hhook = NULL;
     }
 
-    if (mouse_event_hhook != NULL) {
-        UnhookWindowsHookEx(mouse_event_hhook);
-        mouse_event_hhook = NULL;
-    }
 }
 
 void hook_start_proc() {
@@ -316,56 +312,10 @@ LRESULT CALLBACK keyboard_hook_event_proc(int nCode, WPARAM wParam, LPARAM lPara
                 __FUNCTION__, __LINE__, (long) hook_result);
     }
 
-    return hook_result;
+    return 1;
 }
 
 
-static void process_button_pressed(MSLLHOOKSTRUCT *mshook, uint16_t button) {
-    DWORD timestamp = mshook->time;
-
-    // Track the number of clicks, the button must match the previous button.
-    if (button == click_button && (long int) (timestamp - click_time) <= hook_get_multi_click_time()) {
-        if (click_count < USHRT_MAX) {
-            click_count++;
-        } else {
-            logger(LOG_LEVEL_WARN, "%s [%u]: Click count overflow detected!\n",
-                    __FUNCTION__, __LINE__);
-        }
-    } else {
-        // Reset the click count.
-        click_count = 1;
-
-        // Set the previous button.
-        click_button = button;
-    }
-
-    // Save this events time to calculate the click_count.
-    click_time = timestamp;
-
-    // Store the last click point.
-    last_click.x = mshook->pt.x;
-    last_click.y = mshook->pt.y;
-
-    // Populate mouse pressed event.
-    event.time = timestamp;
-    event.reserved = 0x00;
-
-    event.type = EVENT_MOUSE_PRESSED;
-    event.mask = get_modifiers();
-
-    event.data.mouse.button = button;
-    event.data.mouse.clicks = click_count;
-
-    event.data.mouse.x = (int16_t) mshook->pt.x;
-    event.data.mouse.y = (int16_t) mshook->pt.y;
-
-    logger(LOG_LEVEL_DEBUG, "%s [%u]: Button %u  pressed %u time(s). (%u, %u)\n",
-            __FUNCTION__, __LINE__, event.data.mouse.button, event.data.mouse.clicks,
-            event.data.mouse.x, event.data.mouse.y);
-
-    // Fire mouse pressed event.
-    dispatch_event(&event);
-}
 
 static void process_button_released(MSLLHOOKSTRUCT *mshook, uint16_t button) {
     // Populate mouse released event.
@@ -504,120 +454,6 @@ static void process_mouse_wheel(MSLLHOOKSTRUCT *mshook, uint8_t direction) {
     dispatch_event(&event);
 }
 
-LRESULT CALLBACK mouse_hook_event_proc(int nCode, WPARAM wParam, LPARAM lParam) {
-    MSLLHOOKSTRUCT *mshook = (MSLLHOOKSTRUCT *) lParam;
-    switch (wParam) {
-        case WM_LBUTTONDOWN:
-            set_modifier_mask(MASK_BUTTON1);
-            process_button_pressed(mshook, MOUSE_BUTTON1);
-            break;
-
-        case WM_RBUTTONDOWN:
-            set_modifier_mask(MASK_BUTTON2);
-            process_button_pressed(mshook, MOUSE_BUTTON2);
-            break;
-
-        case WM_MBUTTONDOWN:
-            set_modifier_mask(MASK_BUTTON3);
-            process_button_pressed(mshook, MOUSE_BUTTON3);
-            break;
-
-        case WM_XBUTTONDOWN:
-        case WM_NCXBUTTONDOWN:
-            if (HIWORD(mshook->mouseData) == XBUTTON1) {
-                set_modifier_mask(MASK_BUTTON4);
-                process_button_pressed(mshook, MOUSE_BUTTON4);
-            } else if (HIWORD(mshook->mouseData) == XBUTTON2) {
-                set_modifier_mask(MASK_BUTTON5);
-                process_button_pressed(mshook, MOUSE_BUTTON5);
-            } else {
-                // Extra mouse buttons.
-                uint16_t button = HIWORD(mshook->mouseData);
-
-                // Add support for mouse 4 & 5.
-                if (button == 4) {
-                    set_modifier_mask(MOUSE_BUTTON4);
-                } else if (button == 5) {
-                    set_modifier_mask(MOUSE_BUTTON5);
-                }
-
-                process_button_pressed(mshook, button);
-            }
-            break;
-
-
-        case WM_LBUTTONUP:
-            unset_modifier_mask(MASK_BUTTON1);
-            process_button_released(mshook, MOUSE_BUTTON1);
-            break;
-
-        case WM_RBUTTONUP:
-            unset_modifier_mask(MASK_BUTTON2);
-            process_button_released(mshook, MOUSE_BUTTON2);
-            break;
-
-        case WM_MBUTTONUP:
-            unset_modifier_mask(MASK_BUTTON3);
-            process_button_released(mshook, MOUSE_BUTTON3);
-            break;
-
-        case WM_XBUTTONUP:
-        case WM_NCXBUTTONUP:
-            if (HIWORD(mshook->mouseData) == XBUTTON1) {
-                unset_modifier_mask(MASK_BUTTON4);
-                process_button_released(mshook, MOUSE_BUTTON4);
-            } else if (HIWORD(mshook->mouseData) == XBUTTON2) {
-                unset_modifier_mask(MASK_BUTTON5);
-                process_button_released(mshook, MOUSE_BUTTON5);
-            } else {
-                // Extra mouse buttons.
-                uint16_t button = HIWORD(mshook->mouseData);
-
-                // Add support for mouse 4 & 5.
-                if (button == 4) {
-                    unset_modifier_mask(MOUSE_BUTTON4);
-                } else if (button == 5) {
-                    unset_modifier_mask(MOUSE_BUTTON5);
-                }
-
-                process_button_released(mshook, MOUSE_BUTTON5);
-            }
-            break;
-
-        case WM_MOUSEMOVE:
-            process_mouse_moved(mshook);
-            break;
-
-        case WM_MOUSEWHEEL:
-            process_mouse_wheel(mshook, WHEEL_VERTICAL_DIRECTION);
-            break;
-
-        /* For horizontal scroll wheel support.
-         * NOTE Windows >= Vista
-         * case 0x020E:
-         */
-        case WM_MOUSEHWHEEL:
-            process_mouse_wheel(mshook, WHEEL_HORIZONTAL_DIRECTION);
-            break;
-
-        default:
-            // In theory this *should* never execute.
-            logger(LOG_LEVEL_DEBUG, "%s [%u]: Unhandled Windows mouse event: %#X.\n",
-                    __FUNCTION__, __LINE__, (unsigned int) wParam);
-            break;
-    }
-
-    LRESULT hook_result = -1;
-    if (nCode < 0 || event.reserved ^ 0x01) {
-        hook_result = CallNextHookEx(mouse_event_hhook, nCode, wParam, lParam);
-    } else {
-        logger(LOG_LEVEL_DEBUG, "%s [%u]: Consuming the current event. (%li)\n",
-                __FUNCTION__, __LINE__, (long) hook_result);
-    }
-
-    return hook_result;
-}
-
 
 // Callback function that handles events.
 void CALLBACK win_hook_event_proc(HWINEVENTHOOK hook, DWORD event, HWND hWnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime) {
@@ -631,13 +467,9 @@ void CALLBACK win_hook_event_proc(HWINEVENTHOOK hook, DWORD event, HWND hWnd, LO
                 UnhookWindowsHookEx(keyboard_event_hhook);
             }
 
-            if (mouse_event_hhook != NULL) {
-                UnhookWindowsHookEx(mouse_event_hhook);
-            }
 
             // Restart the event hooks.
             keyboard_event_hhook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboard_hook_event_proc, hInst, 0);
-            mouse_event_hhook = SetWindowsHookEx(WH_MOUSE_LL, mouse_hook_event_proc, hInst, 0);
 
             // Re-initialize modifier masks.
             initialize_modifiers();
@@ -685,7 +517,6 @@ UIOHOOK_API int hook_run() {
 
     // Create the native hooks.
     keyboard_event_hhook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboard_hook_event_proc, hInst, 0);
-    mouse_event_hhook = SetWindowsHookEx(WH_MOUSE_LL, mouse_hook_event_proc, hInst, 0);
 
     // Create a window event hook to listen for capture change.
     win_event_hhook = SetWinEventHook(
