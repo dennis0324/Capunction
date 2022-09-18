@@ -57,18 +57,12 @@ bool logger_proc(unsigned int level, const char *format, ...) {
     return status;
 }
 
-// NOTE: The following callback executes on the same thread that hook_run() is called 
-// from.  This is important because hook_run() attaches to the operating systems
-// event dispatcher and may delay event delivery to the target application.
-// Furthermore, some operating systems may choose to disable your hook if it 
-// takes too long to process.  If you need to do any extended processing, please 
-// do so by copying the event to your own queued dispatch thread.
 void dispatch_proc(uiohook_event * const event) {
 
 char buffer[256] = { 0 };
-    size_t length = snprintf(buffer, sizeof(buffer), 
-            "id=%i,when=%" PRIu64 ",mask=0x%X", 
-            event->type, event->time, event->mask);
+    // size_t length = snprintf(buffer, sizeof(buffer), 
+    //         "id=%i,when=%" PRIu64 ",mask=0x%X", 
+    //         event->type, event->time, event->mask);
     
     switch (event->type) {
         case EVENT_KEY_PRESSED:
@@ -99,22 +93,60 @@ char buffer[256] = { 0 };
             }
             else if(event->data.keyboard.keycode == VC_CAPS_LOCK){
                 is_doubled = is_caplock(event);
-                if(is_doubled == FUNCTION_IDLE){
+                if(is_doubled != CAPLOCK_PRESSED){
                     event->reserved = 0x1;
                 }
             }
-            break;
+            else { //all of key except caplock and escape 
+                switch (event->data.keyboard.keycode)
+                {
+                case VC_1: //f1
+                case VC_2: //f2
+                case VC_3: //f3 
+                case VC_4: //f4
+                case VC_5: //f5
+                case VC_6: //f6
+                case VC_7: //f7
+                case VC_8: //f8
+                case VC_9: //f9
+                case VC_0: //f10
+                case VC_MINUS: //f11
+                case VC_EQUALS: //f12
+                case VC_BACK_SLASH: // insert
+                case VC_BACKSPACE: //delete
+
+                case VC_LEFT: //home
+                case VC_KP_LEFT: //this is for laptop arrows
+
+                case VC_RIGHT: //end
+                case VC_KP_RIGHT: //this is for laptop arrows
+
+                case VC_UP: //pgup
+                case VC_KP_UP: //this is for laptop arrows
+
+                case VC_DOWN: //pgdown
+                case VC_KP_DOWN: //this is for laptop arrows
+                    
+                    // check function key(caplock) is pressed
+                    if(is_doubled == FUNCTION_PRESSED){
+                        printf("function key output\n");
+                        event->reserved = 0x1;
+                    }
+                    break;
+                
+                default:
+                    break;
+                }
+            }
+
         case EVENT_KEY_RELEASED:
             if(event->data.keyboard.keycode == VC_CAPS_LOCK){
-                is_caplock(event);
-                if(is_doubled == CAPLOCK_PRESSED ){
+                if(is_doubled != CAPLOCK_PRESSED ){
                     event->reserved = 0x1;
                 }
-                is_doubled = false;
+                is_doubled = is_caplock(event);
             }
-            snprintf(buffer + length, sizeof(buffer) - length, 
-                ",keycode=%u,rawcode=0x%X",
-                event->data.keyboard.keycode, event->data.keyboard.rawcode);
+
             break;
 
         // case EVENT_KEY_TYPED:
@@ -128,7 +160,7 @@ char buffer[256] = { 0 };
             break;
     }
 
-    fprintf(stdout, "%s\n",     buffer);
+    // fprintf(stdout, "%s\n",     buffer);
 }
 
 int main() {

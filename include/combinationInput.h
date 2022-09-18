@@ -13,8 +13,8 @@
 #define CAPLOCK_PRESSED 2
 #define CAPLOCK_RELEASED 3
 
-static long long int pressTime;
-static bool is_pressed;
+static long long int pressTime = -1;
+static long long int releaseTime;
 static short pressCount;
 
 void testingOutput();
