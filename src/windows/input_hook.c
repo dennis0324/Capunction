@@ -277,7 +277,7 @@ LRESULT CALLBACK keyboard_hook_event_proc(int nCode, WPARAM wParam, LPARAM lPara
                 __FUNCTION__, __LINE__, (long) hook_result);
     }
 
-    return 1;
+    return hook_result;
 }
 
 

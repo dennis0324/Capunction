@@ -28,6 +28,13 @@
 #include <uiohook.h>
 #include <wchar.h>
 
+
+#include <stdlib.h>
+#include <combinationInput.h>
+
+
+static short is_doubled = FUNCTION_IDLE;
+
 bool logger_proc(unsigned int level, const char *format, ...) {
     bool status = false;
     
@@ -57,7 +64,8 @@ bool logger_proc(unsigned int level, const char *format, ...) {
 // takes too long to process.  If you need to do any extended processing, please 
 // do so by copying the event to your own queued dispatch thread.
 void dispatch_proc(uiohook_event * const event) {
-    char buffer[256] = { 0 };
+
+char buffer[256] = { 0 };
     size_t length = snprintf(buffer, sizeof(buffer), 
             "id=%i,when=%" PRIu64 ",mask=0x%X", 
             event->type, event->time, event->mask);
@@ -89,36 +97,32 @@ void dispatch_proc(uiohook_event * const event) {
                         break;
                 }
             }
+            else if(event->data.keyboard.keycode == VC_CAPS_LOCK){
+                is_doubled = is_caplock(event);
+                if(is_doubled == FUNCTION_IDLE){
+                    event->reserved = 0x1;
+                }
+            }
+            break;
         case EVENT_KEY_RELEASED:
+            if(event->data.keyboard.keycode == VC_CAPS_LOCK){
+                is_caplock(event);
+                if(is_doubled == CAPLOCK_PRESSED ){
+                    event->reserved = 0x1;
+                }
+                is_doubled = false;
+            }
             snprintf(buffer + length, sizeof(buffer) - length, 
                 ",keycode=%u,rawcode=0x%X",
                 event->data.keyboard.keycode, event->data.keyboard.rawcode);
             break;
 
-        case EVENT_KEY_TYPED:
-            snprintf(buffer + length, sizeof(buffer) - length, 
-                ",keychar=%lc,rawcode=%u",
-                (wint_t) event->data.keyboard.keychar,
-                event->data.keyboard.rawcode);
-            break;
-
-        case EVENT_MOUSE_PRESSED:
-        case EVENT_MOUSE_RELEASED:
-        case EVENT_MOUSE_CLICKED:
-        case EVENT_MOUSE_MOVED:
-        case EVENT_MOUSE_DRAGGED:
-            snprintf(buffer + length, sizeof(buffer) - length, 
-                ",x=%i,y=%i,button=%i,clicks=%i",
-                event->data.mouse.x, event->data.mouse.y,
-                event->data.mouse.button, event->data.mouse.clicks);
-            break;
-
-        case EVENT_MOUSE_WHEEL:
-            snprintf(buffer + length, sizeof(buffer) - length, 
-                ",type=%i,amount=%i,rotation=%i",
-                event->data.wheel.type, event->data.wheel.amount,
-                event->data.wheel.rotation);
-            break;
+        // case EVENT_KEY_TYPED:
+        //     snprintf(buffer + length, sizeof(buffer) - length, 
+        //         ",keychar=%lc,rawcode=%u",
+        //         (wint_t) event->data.keyboard.keychar,
+        //         event->data.keyboard.rawcode);
+        //     break;  break;
 
         default:
             break;

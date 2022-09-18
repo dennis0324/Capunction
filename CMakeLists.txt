@@ -89,6 +89,45 @@ export(TARGETS uiohook FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.
 install(EXPORT ${PROJECT_NAME}-config DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 
+#################
+add_library(combinationInput
+    "src/function_keyboard/combinationInput.c"
+)
+
+set_target_properties(combinationInput PROPERTIES
+    C_STANDARD 99
+    C_STANDARD_REQUIRED ON
+    POSITION_INDEPENDENT_CODE 1
+    OUTPUT_NAME "combinationInput"
+    VERSION ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR}
+    PUBLIC_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/include/combinationInput.h
+)
+
+# include(GNUInstallDirs)
+target_include_directories(combinationInput
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/function_keyboard
+)
+
+
+install(TARGETS combinationInput
+    EXPORT combinationInput-config
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+)
+
+# export(TARGETS combinationInput FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake")
+# install(EXPORT combinationInput-config DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/combinationInput)
+####################
+
+
 if (BUILD_DEMO)
     if (NOT BUILD_SHARED_LIBS)
         set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -98,8 +137,8 @@ if (BUILD_DEMO)
     find_package(Threads REQUIRED)
 
     add_executable(demo_hook "./demo/demo_hook.c")
-    add_dependencies(demo_hook uiohook)
-    target_link_libraries(demo_hook uiohook "${CMAKE_THREAD_LIBS_INIT}")
+    add_dependencies(demo_hook uiohook combinationInput)
+    target_link_libraries(demo_hook uiohook combinationInput "${CMAKE_THREAD_LIBS_INIT}")
 
     add_executable(demo_hook_async "./demo/demo_hook_async.c")
     add_dependencies(demo_hook_async uiohook)
@@ -134,7 +173,6 @@ if (BUILD_DEMO)
         endif()
     endif()
 
-    install(TARGETS demo_hook demo_hook_async demo_post demo_properties RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
 if(ENABLE_TEST)
@@ -154,7 +192,7 @@ if(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
     target_link_libraries(uiohook)
 elseif(APPLE)
-        message("this program doesn't support apple")
+        message("do not support apple")
 elseif(WIN32)
     target_link_libraries(uiohook Advapi32)
 endif()
