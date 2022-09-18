@@ -31,15 +31,6 @@ $ cmake --build . --parallel 2 --target install
 |           | USE_OBJC:BOOL                 | obj-c api              | ON      |
 |           | USE_CARBON_LEGACY:BOOL        | legacy framework       | OFF     |
 | __Win32__ |                               |                        |         |
-| __Linux__ | USE_EVDEV:BOOL                | generic input driver   | ON      |
-| __*nix__  | USE_XF86MISC:BOOL             | xfree86-misc extension | OFF     |
-|           | USE_XINERAMA:BOOL             | xinerama library       | ON      |
-|           | USE_XKB_COMMON:BOOL           | xkbcommon extension    | ON      |
-|           | USE_XKB_FILE:BOOL             | xkb-file extension     | ON      |
-|           | USE_XRANDR:BOOL               | xrandt extension       | OFF     |
-|           | USE_XRECORD_ASYNC:BOOL        | xrecord async api      | OFF     |
-|           | USE_XT:BOOL                   | x toolkit extension    | ON      |
-|           | USE_XTEST:BOOL                | xtest extension        | ON      |
 
 ## Usage
 * [Hook Demo](demo/demo_hook.c)
