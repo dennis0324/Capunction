@@ -154,7 +154,7 @@ if(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
     target_link_libraries(uiohook)
 elseif(APPLE)
-        message
+        message("this program doesn't support apple")
 elseif(WIN32)
     target_link_libraries(uiohook Advapi32)
 endif()
