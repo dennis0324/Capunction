@@ -1,4 +1,4 @@
-/* libUIOHook: Cross-platform keyboard and mouse hooking from userland.
+/* libUIOHook: Cross-platform keyboard hooking from userland.
  * Copyright (C) 2006-2022 Alexander Barker.  All Rights Reserved.
  * https://github.com/kwhat/libuiohook/
  *
@@ -25,7 +25,7 @@
 
 // Thread and hook handles.
 static DWORD hook_thread_id = 0;
-static HHOOK keyboard_event_hhook = NULL, mouse_event_hhook = NULL;
+static HHOOK keyboard_event_hhook = NULL;
 static HWINEVENTHOOK win_event_hhook = NULL;
 
 // The handle to the DLL module pulled in DllMain on DLL_PROCESS_ATTACH.
@@ -37,7 +37,6 @@ static unsigned short int current_modifiers = 0x0000;
 // Click count globals.
 static unsigned short click_count = 0;
 static DWORD click_time = 0;
-static unsigned short int click_button = MOUSE_NOBUTTON;
 static POINT last_click;
 
 // Static event memory.
@@ -107,40 +106,6 @@ static void initialize_modifiers() {
     if (GetKeyState(VK_SCROLL)   < 0) { set_modifier_mask(MASK_SCROLL_LOCK); }
 }
 
-
-/* Retrieves the mouse wheel scroll type. This function cannot be included as
- * part of the input_helper.h due to platform specific calling restrictions.
- */
-static uint8_t get_scroll_wheel_type() {
-    uint8_t value;
-    UINT wheel_type;
-
-    SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &wheel_type, 0);
-    if (wheel_type == WHEEL_PAGESCROLL) {
-        value = WHEEL_BLOCK_SCROLL;
-    } else {
-        value = WHEEL_UNIT_SCROLL;
-    }
-
-    return value;
-}
-
-/* Retrieves the mouse wheel scroll amount. This function cannot be included as
- * part of the input_helper.h due to platform specific calling restrictions.
- */
-static uint16_t get_scroll_wheel_amount() {
-    uint16_t value;
-    UINT wheel_amount;
-
-    SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &wheel_amount, 0);
-    if (wheel_amount == WHEEL_PAGESCROLL) {
-        value = 1;
-    } else {
-        value = (uint16_t) wheel_amount;
-    }
-
-    return value;
-}
 
 void unregister_running_hooks() {
     // Stop the event hook and any timer still running.
@@ -316,145 +281,6 @@ LRESULT CALLBACK keyboard_hook_event_proc(int nCode, WPARAM wParam, LPARAM lPara
 }
 
 
-
-static void process_button_released(MSLLHOOKSTRUCT *mshook, uint16_t button) {
-    // Populate mouse released event.
-    event.time = mshook->time;
-    event.reserved = 0x00;
-
-    event.type = EVENT_MOUSE_RELEASED;
-    event.mask = get_modifiers();
-
-    event.data.mouse.button = button;
-    event.data.mouse.clicks = click_count;
-
-    event.data.mouse.x = (int16_t) mshook->pt.x;
-    event.data.mouse.y = (int16_t) mshook->pt.y;
-
-    logger(LOG_LEVEL_DEBUG, "%s [%u]: Button %u released %u time(s). (%u, %u)\n",
-            __FUNCTION__, __LINE__, event.data.mouse.button,
-            event.data.mouse.clicks,
-            event.data.mouse.x, event.data.mouse.y);
-
-    // Fire mouse released event.
-    dispatch_event(&event);
-
-    // If the pressed event was not consumed...
-    if (event.reserved ^ 0x01 && last_click.x == mshook->pt.x && last_click.y == mshook->pt.y) {
-        // Populate mouse clicked event.
-        event.time = mshook->time;
-        event.reserved = 0x00;
-
-        event.type = EVENT_MOUSE_CLICKED;
-        event.mask = get_modifiers();
-
-        event.data.mouse.button = button;
-        event.data.mouse.clicks = click_count;
-        event.data.mouse.x = (int16_t) mshook->pt.x;
-        event.data.mouse.y = (int16_t) mshook->pt.y;
-
-        logger(LOG_LEVEL_DEBUG, "%s [%u]: Button %u clicked %u time(s). (%u, %u)\n",
-                __FUNCTION__, __LINE__, event.data.mouse.button, event.data.mouse.clicks,
-                event.data.mouse.x, event.data.mouse.y);
-
-        // Fire mouse clicked event.
-        dispatch_event(&event);
-    }
-
-    // Reset the number of clicks.
-    if (button == click_button && (long int) (event.time - click_time) > hook_get_multi_click_time()) {
-        // Reset the click count.
-        click_count = 0;
-    }
-}
-
-static void process_mouse_moved(MSLLHOOKSTRUCT *mshook) {
-    uint64_t timestamp = mshook->time;
-
-    // We received a mouse move event with the mouse actually moving.
-    // This verifies that the mouse was moved after being depressed.
-    if (last_click.x != mshook->pt.x || last_click.y != mshook->pt.y) {
-        // Reset the click count.
-        if (click_count != 0 && (long) (timestamp - click_time) > hook_get_multi_click_time()) {
-            click_count = 0;
-        }
-
-        // Populate mouse move event.
-        event.time = timestamp;
-        event.reserved = 0x00;
-
-        event.mask = get_modifiers();
-
-        // Check the modifier mask range for MASK_BUTTON1 - 5.
-        bool mouse_dragged = event.mask & (MASK_BUTTON1 | MASK_BUTTON2 | MASK_BUTTON3 | MASK_BUTTON4 | MASK_BUTTON5);
-        if (mouse_dragged) {
-            // Create Mouse Dragged event.
-            event.type = EVENT_MOUSE_DRAGGED;
-        } else {
-            // Create a Mouse Moved event.
-            event.type = EVENT_MOUSE_MOVED;
-        }
-
-        event.data.mouse.button = MOUSE_NOBUTTON;
-        event.data.mouse.clicks = click_count;
-        event.data.mouse.x = (int16_t) mshook->pt.x;
-        event.data.mouse.y = (int16_t) mshook->pt.y;
-
-        logger(LOG_LEVEL_DEBUG, "%s [%u]: Mouse %s to %u, %u.\n",
-                __FUNCTION__, __LINE__,  mouse_dragged ? "dragged" : "moved",
-                event.data.mouse.x, event.data.mouse.y);
-
-        // Fire mouse move event.
-        dispatch_event(&event);
-    }
-}
-
-static void process_mouse_wheel(MSLLHOOKSTRUCT *mshook, uint8_t direction) {
-    // Track the number of clicks.
-    // Reset the click count and previous button.
-    click_count = 1;
-    click_button = MOUSE_NOBUTTON;
-
-    // Populate mouse wheel event.
-    event.time = mshook->time;
-    event.reserved = 0x00;
-
-    event.type = EVENT_MOUSE_WHEEL;
-    event.mask = get_modifiers();
-
-    event.data.wheel.clicks = click_count;
-    event.data.wheel.x = (int16_t) mshook->pt.x;
-    event.data.wheel.y = (int16_t) mshook->pt.y;
-
-    event.data.wheel.type = get_scroll_wheel_type();
-    event.data.wheel.amount = get_scroll_wheel_amount();
-
-    /* Delta HIWORD(mshook->mouseData)
-     * A positive value indicates that the wheel was rotated
-     * forward, away from the user; a negative value indicates that
-     * the wheel was rotated backward, toward the user. One wheel
-     * click is defined as WHEEL_DELTA, which is 120. */
-    event.data.wheel.rotation = (int16_t) HIWORD(mshook->mouseData) / WHEEL_DELTA;
-
-    // Vertical direction needs to be inverted on Windows to conform with other platforms.
-    if (direction == WHEEL_VERTICAL_DIRECTION) {
-        event.data.wheel.rotation *= -1;
-    }
-
-    // Set the direction based on what event was received.
-    event.data.wheel.direction = direction;
-
-    logger(LOG_LEVEL_DEBUG, "%s [%u]: Mouse wheel type %u, rotated %i units in the %u direction at %u, %u.\n",
-            __FUNCTION__, __LINE__, event.data.wheel.type,
-            event.data.wheel.amount * event.data.wheel.rotation,
-            event.data.wheel.direction,
-            event.data.wheel.x, event.data.wheel.y);
-
-    // Fire mouse wheel event.
-    dispatch_event(&event);
-}
-
-
 // Callback function that handles events.
 void CALLBACK win_hook_event_proc(HWINEVENTHOOK hook, DWORD event, HWND hWnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime) {
     switch (event) {
@@ -462,7 +288,7 @@ void CALLBACK win_hook_event_proc(HWINEVENTHOOK hook, DWORD event, HWND hWnd, LO
             logger(LOG_LEVEL_DEBUG, "%s [%u]: Restarting Windows input hook on window event: %#X.\n",
                     __FUNCTION__, __LINE__, event);
 
-            // Remove any keyboard or mouse hooks that are still running.
+            // Remove any keyboard hooks that are still running.
             if (keyboard_event_hhook != NULL) {
                 UnhookWindowsHookEx(keyboard_event_hhook);
             }
@@ -478,7 +304,7 @@ void CALLBACK win_hook_event_proc(HWINEVENTHOOK hook, DWORD event, HWND hWnd, LO
             // to determine if we should synthesize missing events.
 
             // Check for event hook error.
-            if (keyboard_event_hhook == NULL || mouse_event_hhook == NULL) {
+            if (keyboard_event_hhook == NULL) {
                 logger(LOG_LEVEL_ERROR, "%s [%u]: SetWindowsHookEx() failed! (%#lX)\n",
                         __FUNCTION__, __LINE__, (unsigned long) GetLastError());
             }
@@ -527,7 +353,7 @@ UIOHOOK_API int hook_run() {
             WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
 
     // If we did not encounter a problem, start processing events.
-    if (keyboard_event_hhook != NULL && mouse_event_hhook != NULL) {
+    if (keyboard_event_hhook != NULL) {
         if (win_event_hhook == NULL) {
             logger(LOG_LEVEL_WARN, "%s [%u]: SetWinEventHook() failed!\n",
                     __FUNCTION__, __LINE__);
