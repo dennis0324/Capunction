@@ -29,6 +29,10 @@ static const uint16_t keyCode_to_functionCode[][2] = {
     {VC_MINUS, VC_F11}, //f11
     {VC_EQUALS, VC_F12}, //f12
 
+
+    {VC_BACKSPACE, VC_DELETE}, //f12
+    {VC_BACK_SLASH, VC_INSERT}, //f12
+
     //this is for desktop keyboard
     {VC_LEFT, VC_HOME}, //home
     {VC_RIGHT, VC_END}, //end
