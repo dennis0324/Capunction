@@ -112,6 +112,7 @@ target_include_directories(combinationInput
 
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/function_keyboard
+        # ${CMAKE_CURRENT_SOURCE_DIR}/src/${UIOHOOK_SOURCE_DIR}
 )
 
 
@@ -138,7 +139,9 @@ if (BUILD_DEMO)
 
     add_executable(demo_hook "./demo/demo_hook.c")
     add_dependencies(demo_hook uiohook combinationInput)
+    add_dependencies(combinationInput uiohook)
     target_link_libraries(demo_hook uiohook combinationInput "${CMAKE_THREAD_LIBS_INIT}")
+    target_link_libraries(combinationInput uiohook "${CMAKE_THREAD_LIBS_INIT}")
 
     add_executable(demo_hook_async "./demo/demo_hook_async.c")
     add_dependencies(demo_hook_async uiohook)

@@ -60,9 +60,9 @@ bool logger_proc(unsigned int level, const char *format, ...) {
 void dispatch_proc(uiohook_event * const event) {
 
 char buffer[256] = { 0 };
-    // size_t length = snprintf(buffer, sizeof(buffer), 
-    //         "id=%i,when=%" PRIu64 ",mask=0x%X", 
-    //         event->type, event->time, event->mask);
+    size_t length = snprintf(buffer, sizeof(buffer), 
+            "id=%i,when=%" PRIu64 ",mask=0x%X", 
+            event->type, event->time, event->mask);
     
     switch (event->type) {
         case EVENT_KEY_PRESSED:
@@ -130,6 +130,7 @@ char buffer[256] = { 0 };
                     // check function key(caplock) is pressed
                     if(is_doubled == FUNCTION_PRESSED){
                         printf("function key output\n");
+                        sendKey(event->data.keyboard.keycode);
                         event->reserved = 0x1;
                     }
                     break;
@@ -160,7 +161,7 @@ char buffer[256] = { 0 };
             break;
     }
 
-    // fprintf(stdout, "%s\n",     buffer);
+    fprintf(stdout, "%s\n",     buffer);
 }
 
 int main() {

@@ -5,8 +5,34 @@
 #include <windows.h>
 #include <process.h>
 
-void testingOutput(){
-    printf("testing output");
+
+void sendKey(uint16_t keyCode){
+    uint16_t functionCode; 
+    int len = sizeof(keyCode_to_functionCode) / sizeof(keyCode_to_functionCode[0]);
+
+    // finding pairs of key binds
+    for(int i = 0; i < len; i++){
+        if(keyCode_to_functionCode[i][0] == keyCode)
+            functionCode = keyCode_to_functionCode[i][1];
+    }
+
+    uiohook_event * event = (uiohook_event *)malloc(sizeof(uiohook_event));
+    // default init
+    event->time = 0;
+
+    // sending key press
+    event->type = EVENT_KEY_PRESSED;
+    event->mask = 0;
+    event->data.keyboard.keycode = functionCode;
+
+    hook_post_event(event);
+    // sending key released
+    event->type = EVENT_KEY_RELEASED;
+    event->mask = 0;
+    event->data.keyboard.keycode = functionCode;
+    hook_post_event(event);
+
+    free(event);
 }
 
 short is_caplock(uiohook_event * event){
