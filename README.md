@@ -1,10 +1,49 @@
-libUIOHook: Cross-platform keyboard and mouse hooking from userland. 
+hookfunctionkey: keyboard for remote computer in WINDOW
 ====================================================================
-this keyHook is only compile in exe (unsupport apple)
-
-
 
 ![build-binaires](https://github.com/kwhat/libuiohook/workflows/build-binaires/badge.svg)
+
+## ABOUT
+
+this is for people code with remote computer(eg. moonlight streaming, goole remote desktop).
+
+using keyboard that doesn't have function keys(eg. f1,f2, etc.)
+
+this make you to use caplock to fn key and send fucntion keys
+
+## Key binds
+
+
+
+| key binds         | output                        | description            | 
+| ---------         | ----------------------------- | ---------------------- | 
+| `caplock` + `1`   | `F1`                          |                        | 
+| `caplock` + `2`   | `F2`                          |                        | 
+| `caplock` + `3`   | `F3`                          |                        | 
+| `caplock` + `4`   | `F4`                          |                        | 
+| `caplock` + `5`   | `F5`                          |                        | 
+| `caplock` + `6`   | `F6`                          |                        | 
+| `caplock` + `7`   | `F7`                          |                        | 
+| `caplock` + `8`   | `F8`                          |                        | 
+| `caplock` + `9`   | `F9`                          |                        | 
+| `caplock` + `0`   | `F10`                         |                        | 
+| `caplock` + `-`   | `F11`                         |                        | 
+| `caplock` + `=`   | `F12`                         |                        | 
+| `caplock` + `backspace`   | `Delete`              | `shift` + `backspace` wouldn't work on my case so i made it | 
+| `caplock` + `backslash`   | `Insert`              |                        | 
+| `caplock` + `←`   | `Home`                        |                        | 
+| `caplock` + `→`   | `End`                         |                        | 
+| `caplock` + `↑`   | `Pgup`                        |                        | 
+| `caplock` + `↓`   | `Pgdn`                        |                        | 
+| `caplock` + `↓`   | `Pgdn`                        |                        | 
+
+
+## used library
+thank you for wondeful librarys!!
+
+[libuiohook](https://github.com/kwhat/libuiohook) - made by [kwhat](https://github.com/kwhat)
+
+[tray](https://github.com/zserge/tray) - made by [zserge](https://github.com/zserge/)
 
 ## Compiling
 Prerequisites: 
@@ -15,27 +54,6 @@ Prerequisites:
 $ git clone https://github.com/kwhat/libuiohook
 $ cd libuiohook
 $ mkdir build && cd build
-$ cmake -S .. -D BUILD_SHARED_LIBS=ON -D BUILD_DEMO=ON -DCMAKE_INSTALL_PREFIX=../dist
+$ cmake -S .. -DCMAKE_INSTALL_PREFIX=../dist
 $ cmake --build . --parallel 2 --target install  
 ```
-
-### Configuration
-
-|           | option                        | description            | default |
-| --------- | ----------------------------- | ---------------------- | ------- | 
-| __all__   | BUILD_DEMO:BOOL               | demo applications      | OFF     |
-|           | BUILD_SHARED_LIBS:BOOL        | shared library         | ON      |
-|           | ENABLE_TEST:BOOL              | testing                | OFF     |
-| __OSX__   | USE_APPLICATION_SERVICES:BOOL | framework              | ON      |
-|           | USE_IOKIT:BOOL                | framework              | ON      |
-|           | USE_OBJC:BOOL                 | obj-c api              | ON      |
-|           | USE_CARBON_LEGACY:BOOL        | legacy framework       | OFF     |
-| __Win32__ |                               |                        |         |
-
-## Usage
-* [Hook Demo](demo/demo_hook.c)
-* [Async Hook Demo](demo/demo_hook_async.c)
-* [Event Post Demo](demo/demo_post.c)
-* [Properties Demo](demo/demo_properties.c)
-* [Public Interface](include/uiohook.h)
-* Please see the man pages for function documentation.
