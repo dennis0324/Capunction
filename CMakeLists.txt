@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
+# this program is only for window can compile at window, and linux(ubuntu)
+
 cmake_minimum_required(VERSION 3.10)
 
 project(uiohook VERSION 1.2.0 LANGUAGES C)
@@ -37,7 +40,6 @@ set(CMAKE_FIND_ROOT_PATH /usr/${TOOLCHAIN_PREFIX})
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-
 
 if (WIN32 OR WIN64)
     set(UIOHOOK_SOURCE_DIR "windows")
@@ -89,7 +91,7 @@ export(TARGETS uiohook FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.
 install(EXPORT ${PROJECT_NAME}-config DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 
-#################
+################# this is for function keyboard for window 
 add_library(combinationInput
     "src/function_keyboard/combinationInput.c"
 )
@@ -123,73 +125,33 @@ install(TARGETS combinationInput
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
-
-# export(TARGETS combinationInput FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake")
-# install(EXPORT combinationInput-config DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/combinationInput)
 ####################
 
 
-if (BUILD_DEMO)
-    if (NOT BUILD_SHARED_LIBS)
-        set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-    endif()
+add_executable(demo_hook "./demo/demo_hook.c")
+add_dependencies(demo_hook uiohook combinationInput)
+add_dependencies(combinationInput uiohook)
+target_link_libraries(demo_hook uiohook combinationInput "${CMAKE_THREAD_LIBS_INIT}")
+target_link_libraries(combinationInput uiohook "${CMAKE_THREAD_LIBS_INIT}")
 
-    find_package(Threads REQUIRED)
-
-    add_executable(demo_hook "./demo/demo_hook.c")
-    add_dependencies(demo_hook uiohook combinationInput)
-    add_dependencies(combinationInput uiohook)
-    target_link_libraries(demo_hook uiohook combinationInput "${CMAKE_THREAD_LIBS_INIT}")
-    target_link_libraries(combinationInput uiohook "${CMAKE_THREAD_LIBS_INIT}")
-
-    add_executable(demo_hook_async "./demo/demo_hook_async.c")
-    add_dependencies(demo_hook_async uiohook)
-    target_link_libraries(demo_hook_async uiohook "${CMAKE_THREAD_LIBS_INIT}")
-
-    add_executable(demo_post "./demo/demo_post.c")
-    add_dependencies(demo_post uiohook)
-    target_link_libraries(demo_post uiohook "${CMAKE_THREAD_LIBS_INIT}")
-
-    add_executable(demo_properties "./demo/demo_properties.c")
-    add_dependencies(demo_properties uiohook)
-    target_link_libraries(demo_properties uiohook "${CMAKE_THREAD_LIBS_INIT}")
-
-    add_custom_target(all_demos DEPENDS
+add_custom_target(all_demos DEPENDS
         demo_hook
-        demo_hook_async
-        demo_post
-        demo_properties
     )
 
-    set_target_properties(all_demos PROPERTIES
-        C_STANDARD 99
-        C_STANDARD_REQUIRED ON
-    )
+set_target_properties(all_demos PROPERTIES
+    C_STANDARD 99
+    C_STANDARD_REQUIRED ON
+)
 
-    if(MSVC)
-        add_compile_definitions(all_demos PRIVATE inline=__inline)
-        add_compile_definitions(all_demos PRIVATE _CRT_SECURE_NO_WARNINGS)
+# this is for compiling at window 
+if(MSVC)
+add_compile_definitions(all_demos PRIVATE inline=__inline)
+add_compile_definitions(all_demos PRIVATE _CRT_SECURE_NO_WARNINGS)
 
-        if (MSVC_VERSION LESS "1900")
-            add_compile_definitions(all_demos PRIVATE snprintf=_snprintf)
-        endif()
+    if (MSVC_VERSION LESS "1900")
+        add_compile_definitions(all_demos PRIVATE snprintf=_snprintf)
     endif()
-
 endif()
-
-if(ENABLE_TEST)
-    add_executable(uiohook_tests
-        "./test/input_helper_test.c"
-        "./test/system_properties_test.c"
-        "./test/minunit.h"
-        "./test/uiohook_test.c"
-    )
-
-    target_include_directories(uiohook_tests PRIVATE "./src/${UIOHOOK_SOURCE_DIR}")
-    target_link_libraries(uiohook_tests uiohook "${CMAKE_THREAD_LIBS_INIT}")
-endif()
-
 
 if(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)

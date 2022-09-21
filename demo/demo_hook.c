@@ -32,6 +32,24 @@
 #include <stdlib.h>
 #include <combinationInput.h>
 
+// this is for tray icon
+#define TRAY_WINAPI 1
+
+#include "tray.h"
+
+#if TRAY_APPINDICATOR
+#define TRAY_ICON1 "indicator-messages"
+#define TRAY_ICON2 "indicator-messages-new"
+#elif TRAY_APPKIT
+#define TRAY_ICON1 "icon.png"
+#define TRAY_ICON2 "icon.png"
+#elif TRAY_WINAPI
+#define TRAY_ICON1 "icon.ico"
+#define TRAY_ICON2 "icon.ico"
+#endif
+
+//
+
 
 static short is_doubled = FUNCTION_IDLE;
 
@@ -60,9 +78,9 @@ bool logger_proc(unsigned int level, const char *format, ...) {
 void dispatch_proc(uiohook_event * const event) {
 
 char buffer[256] = { 0 };
-    size_t length = snprintf(buffer, sizeof(buffer), 
-            "id=%i,when=%" PRIu64 ",mask=0x%X", 
-            event->type, event->time, event->mask);
+    // size_t length = snprintf(buffer, sizeof(buffer), 
+    //         "id=%i,when=%" PRIu64 ",mask=0x%X", 
+    //         event->type, event->time, event->mask);
     
     switch (event->type) {
         case EVENT_KEY_PRESSED:
@@ -161,8 +179,76 @@ char buffer[256] = { 0 };
             break;
     }
 
-    fprintf(stdout, "%s\n",     buffer);
+    // fprintf(stdout, "%s\n",     buffer);
 }
+
+
+static struct tray tray;
+
+static void toggle_cb(struct tray_menu *item) {
+  printf("toggle cb\n");
+  item->checked = !item->checked;
+  tray_update(&tray);
+}
+
+static void hello_cb(struct tray_menu *item) {
+  (void)item;
+  printf("hello cb\n");
+  if (strcmp(tray.icon, TRAY_ICON1) == 0) {
+    tray.icon = TRAY_ICON2;
+  } else {
+    tray.icon = TRAY_ICON1;
+  }
+  tray_update(&tray);
+}
+
+static void quit_cb(struct tray_menu *item) {
+  (void)item;
+  printf("quit cb\n");
+  tray_exit();
+}
+
+static void submenu_cb(struct tray_menu *item) {
+  (void)item;
+  printf("submenu: clicked on %s\n", item->text);
+  tray_update(&tray);
+}
+
+// Test tray init
+static struct tray tray = {
+    .icon = TRAY_ICON1,
+    .menu =
+        (struct tray_menu[]){
+            {.text = "Hello", .cb = hello_cb},
+            {.text = "Checked", .checked = 1, .cb = toggle_cb},
+            {.text = "Disabled", .disabled = 1},
+            {.text = "-"},
+            {.text = "SubMenu",
+             .submenu =
+                 (struct tray_menu[]){
+                     {.text = "FIRST", .checked = 1, .cb = submenu_cb},
+                     {.text = "SECOND",
+                      .submenu =
+                          (struct tray_menu[]){
+                              {.text = "THIRD",
+                               .submenu =
+                                   (struct tray_menu[]){
+                                       {.text = "7", .cb = submenu_cb},
+                                       {.text = "-"},
+                                       {.text = "8", .cb = submenu_cb},
+                                       {.text = NULL}}},
+                              {.text = "FOUR",
+                               .submenu =
+                                   (struct tray_menu[]){
+                                       {.text = "5", .cb = submenu_cb},
+                                       {.text = "6", .cb = submenu_cb},
+                                       {.text = NULL}}},
+                              {.text = NULL}}},
+                     {.text = NULL}}},
+            {.text = "-"},
+            {.text = "Quit", .cb = quit_cb},
+            {.text = NULL}},
+};
 
 int main() {
     // Set the logger callback for library output.
@@ -173,6 +259,11 @@ int main() {
 
     // Start the hook and block.
     // NOTE If EVENT_HOOK_ENABLED was delivered, the status will always succeed.
+    
+    if (tray_init(&tray) < 0) {
+        printf("failed to create tray\n");
+        return 1;
+    }
     int status = hook_run();
     switch (status) {
         case UIOHOOK_SUCCESS:
@@ -241,5 +332,6 @@ int main() {
             break;
     }
 
+    hook_stop();
     return status;
 }
