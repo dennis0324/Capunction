@@ -129,8 +129,9 @@ install(TARGETS combinationInput
 
 
 add_executable(demo_hook
-    "./demo/demo_hook.c"
+    "./demo/personal_tray.c"
     "./demo/hook.c"
+    "./demo/main.c"
     
 )
 add_dependencies(demo_hook uiohook combinationInput)

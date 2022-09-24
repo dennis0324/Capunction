@@ -20,24 +20,31 @@
 #include <config.h>
 #endif
 
-#include <inttypes.h>
-#include <stdarg.h>
-#include <stdbool.h>
 #include <stdio.h>
-#include <string.h>
-#include <uiohook.h>
-#include <wchar.h>
-
 
 #include <stdlib.h>
 #include <combinationInput.h>
 
-
 #define TRAY_WINAPI 1
 
 #include <tray.h>
-#include <main.h>
+#include <hook.h>
+#include <personal_tray.h>
 
+
+
+#if TRAY_APPINDICATOR
+#define TRAY_ICON1 "indicator-messages"
+#define TRAY_ICON2 "indicator-messages-new"
+#elif TRAY_APPKIT
+#define TRAY_ICON1 "icon.png"
+#define TRAY_ICON2 "icon.png"
+#elif TRAY_WINAPI
+#define TRAY_ICON1 "icon.ico"
+#define TRAY_ICON2 "icon.ico"
+#endif
+
+static struct tray tray;
 
 static void toggle_cb(struct tray_menu *item) {
     printf("toggle cb\n");
@@ -97,35 +104,35 @@ static void submenu_cb(struct tray_menu *item) {
   tray_update(&tray);
 }
 
-static struct tray_menu menu[] = {
-            {.text = "running", .checked = 0, .cb = toggle_cb},
-            {.text = "Disabled", .disabled = 1},
-            {.text = "-"},
-            {.text = "Quit", .cb = quit_cb},
-            {.text = NULL}
-            };
+static struct tray_menu menuSelect[] = {
+    {.text = "running", .checked = 0, .cb = toggle_cb},
+    {.text = "Disabled", .disabled = 1},
+    {.text = "-"},
+    {.text = "Quit", .cb = quit_cb},
+    {.text = NULL}
+};
+
+static struct tray tray = {
+    .icon = TRAY_ICON1,
+    .menu = menuSelect
+};
 
 
 
-
-int main() {
-
-    // Set the logger callback for library output.
-    hook_set_logger_proc(&logger_proc);
-    
-    // Set the event callback for uiohook events.
-    hook_set_dispatch_proc(&dispatch_proc);
-
-    // Start the hook and block.
-    // NOTE If EVENT_HOOK_ENABLED was delivered, the status will always succeed.
+int create_tray(){
     if (tray_init(&tray) < 0) {
         printf("failed to create tray\n");
-        return 1;
+        return 1; 
     }
-
-    toggle_cb(&menu[0]);
-    
-    while (tray_loop(1) == 0);
 
     return 0;
 }
+
+
+void set_toggle(int value){
+    enum Menu_Option menu_option;
+    menu_option = running_state;
+    toggle_cb(&menuSelect[menu_option]);
+}
+
+

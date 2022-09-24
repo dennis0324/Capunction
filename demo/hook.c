@@ -1,6 +1,5 @@
 
 #include <inttypes.h>
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,7 +11,9 @@
 #include <combinationInput.h>
 
 #include <tray.h>
-#include <main.h>
+#include <hook.h>
+
+static short is_doubled = FUNCTION_IDLE;
 
 bool logger_proc(unsigned int level, const char *format, ...) {
     bool status = false;
@@ -106,10 +107,7 @@ void dispatch_proc(uiohook_event * const event) {
 
 
 void hook_program_run(){
-    enum Menu_Option menu_option;
     int status = hook_run();
-    // menu_option = running_state;
-    // menu[menu_option].checked = 1;
     switch (status) {
         case UIOHOOK_SUCCESS:
             // Everything is ok.
