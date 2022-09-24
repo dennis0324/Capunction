@@ -128,7 +128,11 @@ install(TARGETS combinationInput
 ####################
 
 
-add_executable(demo_hook "./demo/demo_hook.c")
+add_executable(demo_hook
+    "./demo/demo_hook.c"
+    "./demo/hook.c"
+    
+)
 add_dependencies(demo_hook uiohook combinationInput)
 add_dependencies(combinationInput uiohook)
 target_link_libraries(demo_hook uiohook combinationInput "${CMAKE_THREAD_LIBS_INIT}")
