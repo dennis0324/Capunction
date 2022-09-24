@@ -39,7 +39,6 @@ this make you to use caplock to fn key and send fucntion keys
 
 
 ## used library
-thank you for wonderful librarys!!
 
 [libuiohook](https://github.com/kwhat/libuiohook) - made by [kwhat](https://github.com/kwhat)
 
