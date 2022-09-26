@@ -41,6 +41,9 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
+enable_language("RC")
+set(APP_ICON_RESOURCE_WINDOWS "src/appicon.rc")
+
 if (WIN32 OR WIN64)
     set(UIOHOOK_SOURCE_DIR "windows")
 elseif (APPLE)
@@ -49,7 +52,7 @@ else()
     set(UIOHOOK_SOURCE_DIR "windows")
 endif()
 
-add_library(uiohook
+add_library(uiohook SHARED
     "src/logger.c"
     "src/${UIOHOOK_SOURCE_DIR}/input_helper.c"
     "src/${UIOHOOK_SOURCE_DIR}/input_hook.c"
@@ -92,7 +95,7 @@ install(EXPORT ${PROJECT_NAME}-config DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/
 
 
 ################# this is for function keyboard for window 
-add_library(combinationInput
+add_library(combinationInput SHARED
     "src/function_keyboard/combinationInput.c"
 )
 
@@ -106,7 +109,7 @@ set_target_properties(combinationInput PROPERTIES
     PUBLIC_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/include/combinationInput.h
 )
 
-# include(GNUInstallDirs)
+include(GNUInstallDirs)
 target_include_directories(combinationInput
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -114,7 +117,6 @@ target_include_directories(combinationInput
 
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/function_keyboard
-        # ${CMAKE_CURRENT_SOURCE_DIR}/src/${UIOHOOK_SOURCE_DIR}
 )
 
 
@@ -132,6 +134,7 @@ add_executable(demo_hook
     "./demo/personal_tray.c"
     "./demo/hook.c"
     "./demo/main.c"
+    ${APP_ICON_RESOURCE_WINDOWS}
     
 )
 add_dependencies(demo_hook uiohook combinationInput)
@@ -161,10 +164,16 @@ endif()
 if(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
     target_link_libraries(uiohook)
+    if(PUBLISH)
+        target_link_options(demo_hook PRIVATE -mwindows)
+    endif()
 elseif(APPLE)
         message("do not support apple")
 elseif(WIN32)
     target_link_libraries(uiohook Advapi32)
+    if(PUBLISH)
+        target_link_options(demo_hook PRIVATE -mwindows)
+    endif()
 endif()
 
 
