@@ -31,7 +31,8 @@ Prerequisites:
 $ git clone https://github.com/dennis0324/Capunction.git
 $ cd Capunction
 $ mkdir build && cd build
-$ cmake -S .. -DCMAKE_INSTALL_PREFIX=../dist
+$ cmake -S .. -DCMAKE_INSTALL_PREFIX=../dist // this is for building and testing
+$ cmake -S .. -DCMAKE_INSTALL_PREFIX=../dist -DPUBLISH=TRUE // this is for publish for use
 $ cmake --build . --parallel 2 --target install  
 ```
 
