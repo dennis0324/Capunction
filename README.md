@@ -13,11 +13,13 @@ key binding for remote desktop in WINDOW due to non function keyboard
 <h3>what is Capunction?</h3>
 It is cap + function!<br>
 
-This is for people that need a function key when using remote desktop software(eg. moonlight streaming, goole remote desktop).
+<h3>Recommended to</h3>
 
-using keyboard that doesn't have function keys(eg. f1,f2, etc.)
-
-this make you to use caplock to fn key and send fucntion keys
+ * This is for people that need a function key when using remote desktop software(eg. moonlight streaming, google remote desktop).
+ * if your function keys doesn't work properly.
+ * Using keyboard that doesn't have function keys(eg. f1,f2, etc.)
+ 
+ this make you to use capslock to fn key 
 
 
 ## Compiling
@@ -41,26 +43,26 @@ $ cmake --build . --parallel 2 --target install
 
 | key binds         | output                        | description            | 
 | ---------         | ----------------------------- | ---------------------- | 
-| `caplock` + `1`   | `F1`                          |                        | 
-| `caplock` + `2`   | `F2`                          |                        | 
-| `caplock` + `3`   | `F3`                          |                        | 
-| `caplock` + `4`   | `F4`                          |                        | 
-| `caplock` + `5`   | `F5`                          |                        | 
-| `caplock` + `6`   | `F6`                          |                        | 
-| `caplock` + `7`   | `F7`                          |                        | 
-| `caplock` + `8`   | `F8`                          |                        | 
-| `caplock` + `9`   | `F9`                          |                        | 
-| `caplock` + `0`   | `F10`                         |                        | 
-| `caplock` + `-`   | `F11`                         |                        | 
-| `caplock` + `=`   | `F12`                         |                        | 
-| `caplock` + `backspace`   | `Delete`              | `shift` + `backspace` wouldn't work on my case so i made it | 
-| `caplock` + `backslash`   | `Insert`              |                        | 
-| `caplock` + `←`   | `Home`                        |                        | 
-| `caplock` + `→`   | `End`                         |                        | 
-| `caplock` + `↑`   | `Pgup`                        |                        | 
-| `caplock` + `↓`   | `Pgdn`                        |                        | 
-| `caplock` + `↓`   | `Pgdn`                        |                        | 
-| `caplock` +  `caplock`   |  `caplock`                        |                        | 
+| `capslock` + `1`   | `F1`                          |                        | 
+| `capslock` + `2`   | `F2`                          |                        | 
+| `capslock` + `3`   | `F3`                          |                        | 
+| `capslock` + `4`   | `F4`                          |                        | 
+| `capslock` + `5`   | `F5`                          |                        | 
+| `capslock` + `6`   | `F6`                          |                        | 
+| `capslock` + `7`   | `F7`                          |                        | 
+| `capslock` + `8`   | `F8`                          |                        | 
+| `capslock` + `9`   | `F9`                          |                        | 
+| `capslock` + `0`   | `F10`                         |                        | 
+| `capslock` + `-`   | `F11`                         |                        | 
+| `capslock` + `=`   | `F12`                         |                        | 
+| `capslock` + `backspace`   | `Delete`              | `shift` + `backspace` wouldn't work on my case so i made it | 
+| `capslock` + `backslash`   | `Insert`              |                        | 
+| `capslock` + `←`   | `Home`                        |                        | 
+| `capslock` + `→`   | `End`                         |                        | 
+| `capslock` + `↑`   | `Pgup`                        |                        | 
+| `capslock` + `↓`   | `Pgdn`                        |                        | 
+| `capslock` + `↓`   | `Pgdn`                        |                        | 
+| `capslock` +  `capslock`   |  `capslock`                        | instantly press `capslock` twice will active capslock  | 
 
 
 ## used library
