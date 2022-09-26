@@ -28,8 +28,8 @@ Prerequisites:
  * gcc, clang or msvc
 
 ```
-$ git clone https://github.com/kwhat/libuiohook
-$ cd libuiohook
+$ git clone https://github.com/dennis0324/Capunction.git
+$ cd Capunction
 $ mkdir build && cd build
 $ cmake -S .. -DCMAKE_INSTALL_PREFIX=../dist
 $ cmake --build . --parallel 2 --target install  
