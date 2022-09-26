@@ -73,5 +73,5 @@ $ cmake --build . --parallel 2 --target install
 
 
 ## LICENSE
-Distributed under the GNU LGPLv3 License. See LICENSE for more information.
+Distributed under the GNU LGPLv3 License. See [LICENSE](https://github.com/dennis0324/Capunction) for more information.
 
