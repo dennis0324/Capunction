@@ -2,6 +2,8 @@
 #include <tray.h>
 #include <hook.h>
 #include <personal_tray.h>
+#include <stdio.h>
+
 
 int main() {
 
@@ -13,11 +15,9 @@ int main() {
 
     // Start the hook and block.
     // NOTE If EVENT_HOOK_ENABLED was delivered, the status will always succeed.
-    int status = create_tray();
-
-    set_toggle(1);
+    // int status = create_tray();
     
-    while (tray_loop(1) == 0);
+    personalwhile();
 
-    return status;
+    return 0;
 }

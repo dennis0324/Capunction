@@ -135,4 +135,14 @@ void set_toggle(int value){
     toggle_cb(&menuSelect[menu_option]);
 }
 
+struct tray get_tray(){
+    return tray;
+}
+
+int personalwhile(){
+    int status = create_tray();
+    while (tray_loop(1) == 0);
+    return status;
+}
+
 

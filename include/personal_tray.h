@@ -21,4 +21,8 @@ int create_tray();
  */
 void set_toggle(int value);
 
+struct tray get_tray();
+
+
+int personalwhile();
 #endif
