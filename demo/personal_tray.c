@@ -141,6 +141,7 @@ struct tray get_tray(){
 
 int personalwhile(){
     int status = create_tray();
+    set_toggle(1);
     while (tray_loop(1) == 0);
     return status;
 }
