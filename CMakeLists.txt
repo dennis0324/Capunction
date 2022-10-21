@@ -131,9 +131,9 @@ install(TARGETS combinationInput
 
 
 add_executable(demo_hook
-    "./demo/personal_tray.c"
-    "./demo/hook.c"
-    "./demo/main.c"
+    "./src/main/personal_tray.c"
+    "./src/main/hook.c"
+    "./src/main/main.c"
     ${APP_ICON_RESOURCE_WINDOWS}
     
 )
