@@ -7,7 +7,6 @@
 key binding for remote desktop in WINDOW due to non function keyboard
 </p>
 
-![build-binaires](https://github.com/kwhat/libuiohook/workflows/build-binaires/badge.svg)
 
 ## ABOUT
 <h3>what is Capunction?</h3>
