@@ -35,6 +35,9 @@ $ cmake -S .. -DCMAKE_INSTALL_PREFIX=../dist -DPUBLISH=TRUE // this is for publi
 $ cmake --build . --parallel 2 --target install  
 ```
 
+## Future Update
+- [ ] Linux, Apple Environment compatible
+- [ ] Key mapping
 
 
 ## Key binds
