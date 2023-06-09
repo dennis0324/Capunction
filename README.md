@@ -61,7 +61,6 @@ $ cmake --build . --parallel 2 --target install
 | `capslock` + `→`   | `End`                         |                        | 
 | `capslock` + `↑`   | `Pgup`                        |                        | 
 | `capslock` + `↓`   | `Pgdn`                        |                        | 
-| `capslock` + `↓`   | `Pgdn`                        |                        | 
 | `capslock` +  `capslock`   |  `capslock`                        | instantly press `capslock` twice will active capslock  | 
 
 
