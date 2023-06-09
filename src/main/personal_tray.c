@@ -40,11 +40,18 @@
 #define TRAY_ICON1 "icon.png"
 #define TRAY_ICON2 "icon.png"
 #elif TRAY_WINAPI
-#define TRAY_ICON1 "icon.ico"
-#define TRAY_ICON2 "icon.ico"
+#define TRAY_ICON1 "Capunction.exe"
 #endif
 
 static struct tray tray;
+
+
+static void about(struct tray_menu *item){
+    (void)item;
+    printf("about\n");  
+    ShellExecute(NULL, "open", "https://github.com/dennis0324/Capunction", NULL, NULL, SW_SHOWNORMAL);
+    tray_update(&tray);
+}
 
 static void toggle_cb(struct tray_menu *item) {
     printf("toggle cb\n");
@@ -57,17 +64,6 @@ static void toggle_cb(struct tray_menu *item) {
     else{
         hook_program_stop();
     }
-}
-
-static void hello_cb(struct tray_menu *item) {
-  (void)item;
-  printf("hello cb\n");
-  if (strcmp(tray.icon, TRAY_ICON1) == 0) {
-    tray.icon = TRAY_ICON2;
-  } else {
-    tray.icon = TRAY_ICON1;
-  }
-  tray_update(&tray);
 }
 
 static void quit_cb(struct tray_menu *item) {
@@ -95,18 +91,14 @@ static void quit_cb(struct tray_menu *item) {
             logger_proc(LOG_LEVEL_ERROR, "An unknown hook error occurred. (%#X)", status);
             break;
     }
+
     tray_exit();
 }
 
-static void submenu_cb(struct tray_menu *item) {
-  (void)item;
-  printf("submenu: clicked on %s\n", item->text);
-  tray_update(&tray);
-}
-
 static struct tray_menu menuSelect[] = {
-    {.text = "running", .checked = 0, .cb = toggle_cb},
-    {.text = "Disabled", .disabled = 1},
+    {.text = "About", .checked = 0, .cb = about},
+    {.text = "-"},
+    {.text = "Running", .checked = 0, .cb = toggle_cb},
     {.text = "-"},
     {.text = "Quit", .cb = quit_cb},
     {.text = NULL}
@@ -128,8 +120,7 @@ int create_tray(){
     return 0;
 }
 
-
-void set_toggle(int value){
+void set_toggle(){
     enum Menu_Option menu_option;
     menu_option = running_state;
     toggle_cb(&menuSelect[menu_option]);
@@ -141,7 +132,7 @@ struct tray get_tray(){
 
 int personalwhile(){
     int status = create_tray();
-    set_toggle(1);
+    set_toggle();
     while (tray_loop(1) == 0);
     return status;
 }

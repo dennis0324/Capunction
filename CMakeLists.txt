@@ -52,7 +52,7 @@ else()
     set(UIOHOOK_SOURCE_DIR "windows")
 endif()
 
-add_library(uiohook SHARED
+add_library(uiohook
     "src/logger.c"
     "src/${UIOHOOK_SOURCE_DIR}/input_helper.c"
     "src/${UIOHOOK_SOURCE_DIR}/input_hook.c"
@@ -95,7 +95,7 @@ install(EXPORT ${PROJECT_NAME}-config DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/
 
 
 ################# this is for function keyboard for window 
-add_library(combinationInput SHARED
+add_library(combinationInput
     "src/function_keyboard/combinationInput.c"
 )
 
@@ -130,20 +130,20 @@ install(TARGETS combinationInput
 ####################
 
 
-add_executable(demo_hook
+add_executable(Capunction
     "./src/main/personal_tray.c"
     "./src/main/hook.c"
     "./src/main/main.c"
     ${APP_ICON_RESOURCE_WINDOWS}
     
 )
-add_dependencies(demo_hook uiohook combinationInput)
+add_dependencies(Capunction uiohook combinationInput)
 add_dependencies(combinationInput uiohook)
-target_link_libraries(demo_hook uiohook combinationInput "${CMAKE_THREAD_LIBS_INIT}")
+target_link_libraries(Capunction uiohook combinationInput "${CMAKE_THREAD_LIBS_INIT}")
 target_link_libraries(combinationInput uiohook "${CMAKE_THREAD_LIBS_INIT}")
 
 add_custom_target(all_demos DEPENDS
-        demo_hook
+        Capunction
     )
 
 set_target_properties(all_demos PROPERTIES
@@ -165,14 +165,14 @@ if(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
     target_link_libraries(uiohook)
     if(PUBLISH)
-        target_link_options(demo_hook PRIVATE -mwindows)
+        target_link_options(Capunction PRIVATE -mwindows)
     endif()
 elseif(APPLE)
         message("do not support apple")
 elseif(WIN32)
     target_link_libraries(uiohook Advapi32)
     if(PUBLISH)
-        target_link_options(demo_hook PRIVATE -mwindows)
+        target_link_options(Capunction PRIVATE -mwindows)
     endif()
 endif()
 

@@ -2,7 +2,7 @@
 #define PERSONAL_TRAY
 
 enum Menu_Option{
-    running_state = 0,
+    running_state = 2,
     disabled
 };
 
@@ -19,7 +19,7 @@ int create_tray();
  * 
  * @param value 
  */
-void set_toggle(int value);
+void set_toggle();
 
 struct tray get_tray();
 
