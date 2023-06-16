@@ -1,4 +1,4 @@
-
+# Keyboard hook key suppressionn is not working due to x11 technical Issue SO LINUX or APPLE project will be dispose
 <p align="center">
   <img src = "https://user-images.githubusercontent.com/50710829/192276651-99b2c137-3ed1-428f-8716-8c2eab20e961.png" width="300px" >
 </p>
