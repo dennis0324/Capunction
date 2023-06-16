@@ -1,6 +1,8 @@
 
 #ifndef HOOK_H
 #define HOOK_H
+#include <stdbool.h>
+#include <uiohook.h>
 
 bool logger_proc(unsigned int level, const char *format, ...);
 
