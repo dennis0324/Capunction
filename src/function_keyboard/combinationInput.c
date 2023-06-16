@@ -1,9 +1,19 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <combinationInput.h>
 #include <uiohook.h>
 
-#include <windows.h>
-#include <process.h>
+
+#if TRAY_APPINDICATOR
+    #include <unistd.h>
+    #include <pthread.h>
+#elif TRAY_APPKIT
+#elif TRAY_WINAPI
+    #include <windows.h>
+    #include <process.h>
+#endif
+
+
 
 
 void sendKey(uint16_t keyCode){
@@ -60,6 +70,8 @@ short is_caplock(uiohook_event * event){
     return FUNCTION_IDLE;
 }
 
+
+#ifdef TRAY_WINAPI
 /**
  * @brief timeout of caplock double pressed
  * 
@@ -80,3 +92,21 @@ unsigned _stdcall caplock_timeout(void* arg)
 void check_double_pressed(){
     _beginthreadex(NULL, 0, caplock_timeout, 0, 0, NULL);
 }
+#endif
+
+#ifdef TRAY_APPINDICATOR
+
+void * caplock_timeout(void * arg){
+    pthread_detach(pthread_self());
+    usleep(200 * 1000);
+    printf("time passed\n");
+    pressCount = 0;
+}
+
+void check_double_pressed(){
+    pthread_t thread;
+    pthread_create(&thread, NULL, caplock_timeout, NULL);
+}
+
+
+#endif

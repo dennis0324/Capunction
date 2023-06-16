@@ -54,7 +54,14 @@ short is_caplock(uiohook_event * event);
 
 void check_double_pressed();
 
-unsigned _stdcall caplock_timeout(void* arg);
+
+#if TRAY_APPINDICATOR
+    void * caplock_timeout(void * arg);
+#elif TRAY_APPKIT
+    #define TRAY_ICON1 "icon.png"
+#elif TRAY_WINAPI
+    unsigned _stdcall caplock_timeout(void* arg);
+#endif
 
 void sendKey(uint16_t keyCode);
 
